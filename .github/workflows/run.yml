@@ -1,0 +1,43 @@
+name: GiftCode Auto
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "*/10 * * * *"
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.11
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          playwright install --with-deps
+
+      - name: Run script
+        run: python main.py
+
+      # 🔥 스크린샷 다운로드 가능
+      - name: Upload screenshots
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshots
+          path: screenshots/
+
+      # 🔥 used_pairs 유지
+      - name: Commit used_pairs
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "actions@github.com"
+          git add used_pairs.txt
+          git commit -m "update used pairs" || echo "no changes"
+          git push
